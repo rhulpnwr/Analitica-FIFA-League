@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analitica FIFA 2026 World Cup League</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0e1a;--surface:#111827;--surface2:#1c2333;--border:#ffffff14;--border2:#ffffff22;
+    --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;--gold:#f59e0b;
+    --accent:#3b82f6;--accent-dim:#1e3a5f;--green:#22c55e;--green-dim:#14532d;
+    --red:#ef4444;--red-dim:#450a0a;--radius:10px;--radius-lg:14px;
+  }
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:15px;line-height:1.5}
+  .app{max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem}
+  .header{text-align:center;padding:2.5rem 1rem 2rem;position:relative;overflow:hidden}
+  .header-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#1e3a5f55 0%,transparent 70%);pointer-events:none}
+  .header h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:2px}
+  .header .subtitle{font-size:13px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+  .header p{font-size:14px;color:var(--text2)}
+  .trophy-row{font-size:36px;margin-bottom:12px}
+  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:60vh}
+  .login-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center}
+  .login-card h2{font-size:20px;font-weight:600;margin-bottom:6px}
+  .login-card p{font-size:14px;color:var(--text2);margin-bottom:1.5rem}
+  .input-row{display:flex;gap:8px}
+  input[type=text],input[type=password],select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:14px;padding:10px 14px;width:100%;outline:none;transition:border .15s;font-family:inherit}
+  input[type=text]:focus,input[type=password]:focus,select:focus{border-color:var(--accent)}
+  input.error{border-color:var(--red)!important}
+  select option{background:#1c2333}
+  .btn{padding:10px 20px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:var(--surface);border-color:var(--border)}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.primary:hover{opacity:.85}
+  .btn.danger{background:var(--red-dim);color:var(--red);border-color:#ef444433}
+  .btn.small{padding:6px 12px;font-size:12px}
+  .user-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:1.5rem}
+  .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .user-info-name{font-size:14px;font-weight:600}
+  .user-info-pts{font-size:12px;color:var(--text2)}
+  .tab-bar{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.5rem}
+  .tab{flex:1;padding:10px 8px;text-align:center;font-size:13px;cursor:pointer;background:var(--surface2);color:var(--text2);border:none;transition:all .15s;font-family:inherit}
+  .tab.active{background:var(--surface);color:var(--text);font-weight:600}
+  .tab:not(:last-child){border-right:1px solid var(--border)}
+  .tab:hover:not(.active){background:var(--surface)}
+  .section{display:none}.section.active{display:block}
+  .round-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 10px}
+  .match-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:10px}
+  .match-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:12px}
+  .match-meta .result-tag{color:var(--green);font-weight:500}
+  .teams-grid{display:grid;grid-template-columns:1fr 52px 1fr;gap:8px;align-items:center}
+  .team-btn{padding:16px 8px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2);user-select:none}
+  .team-btn:hover:not(.locked){border-color:var(--border2);background:var(--surface)}
+  .team-btn.selected{border:2px solid var(--accent);background:var(--accent-dim)}
+  .team-btn.correct{border:2px solid var(--green);background:var(--green-dim)}
+  .team-btn.wrong{border:2px solid var(--red);background:var(--red-dim);opacity:.7}
+  .team-btn.locked{cursor:default}
+  .team-flag{font-size:38px;display:block;margin-bottom:7px;line-height:1}
+  .tname{font-size:13px;font-weight:500}
+  .vs-col{text-align:center}
+  .vs{font-size:11px;color:var(--text3);font-weight:600}
+  .match-footer{margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+  .badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+  .badge.picked{background:#1e3a5f;color:#93c5fd}
+  .badge.correct{background:var(--green-dim);color:var(--green)}
+  .badge.wrong{background:var(--red-dim);color:var(--red)}
+  .badge.nopick{color:var(--text3);font-size:11px}
+  .pick-count{font-size:11px;color:var(--text3)}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center}
+  .stat-num{font-size:22px;font-weight:700}
+  .stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+  .lb-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+  .lb-card.me{border-color:var(--accent)}
+  .rank{width:30px;font-size:14px;font-weight:700;text-align:center;flex-shrink:0}
+  .lb-name{font-size:14px;font-weight:600}
+  .lb-sub{font-size:12px;color:var(--text2)}
+  .lb-pts{margin-left:auto;font-size:22px;font-weight:700}
+  .lb-pts span{font-size:11px;font-weight:400;color:var(--text2)}
+  .admin-lock{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;text-align:center}
+  .admin-lock .lock-icon{font-size:40px;margin-bottom:16px}
+  .admin-lock h3{font-size:18px;font-weight:600;margin-bottom:6px}
+  .admin-lock p{font-size:14px;color:var(--text2);margin-bottom:1.5rem}
+  .admin-lock .pw-row{display:flex;gap:8px;max-width:340px;width:100%}
+  .admin-lock .error-msg{font-size:12px;color:var(--red);margin-top:8px;min-height:18px}
+  .admin-unlocked-bar{display:flex;align-items:center;justify-content:space-between;background:var(--green-dim);border:1px solid #22c55e33;border-radius:var(--radius);padding:8px 14px;margin-bottom:1rem}
+  .admin-unlocked-bar span{font-size:13px;color:var(--green)}
+  .admin-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem}
+  .admin-block h3{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .notice{padding:10px 14px;background:#1e3a5f44;border:1px solid #3b82f633;border-radius:var(--radius);font-size:13px;color:#93c5fd;margin-bottom:1rem}
+  .match-edit-row{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px}
+  .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .field-label{font-size:11px;color:var(--text3);margin-bottom:4px}
+  .result-row{margin-bottom:10px}
+  .result-label{font-size:12px;color:var(--text2);margin-bottom:5px}
+  .empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px}
+  .empty .icon{font-size:36px;margin-bottom:10px}
+  .modal-bg{position:fixed;inset:0;background:#00000088;display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+  .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+  .modal h3{font-size:16px;font-weight:600;margin-bottom:1rem}
+  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1rem}
+  .field-row{margin-bottom:12px}
+  .checkbox-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2)}
+  input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}
+  .saved-flash{font-size:12px;color:var(--green);display:none;margin-left:8px}
+  .saved-flash.show{display:inline}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;background:#1e3a5f;color:#93c5fd;margin-left:6px}
+  .country-picker{position:relative}
+  .country-search{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:14px;padding:10px 14px 10px 38px;outline:none;transition:border .15s;font-family:inherit}
+  .country-search:focus{border-color:var(--accent)}
+  .search-icon{position:absolute;left:12px;top:11px;font-size:15px;pointer-events:none}
+  .country-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);z-index:200;max-height:220px;overflow-y:auto;display:none}
+  .country-dropdown.open{display:block}
+  .c-opt{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:14px;transition:background .1s}
+  .c-opt:hover,.c-opt.hi{background:var(--surface2)}
+  .c-opt-flag{font-size:20px;flex-shrink:0;line-height:1}
+  .c-opt-name{color:var(--text)}
+  .preview{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;min-height:24px}
+  .preview-flag{font-size:22px;line-height:1}
+  .preview-name{font-weight:500;color:var(--text)}
+  .no-res{padding:12px 14px;font-size:13px;color:var(--text3);text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-bg"></div>
+    <div class="trophy-row">&#x1F3C6;</div>
+    <div class="subtitle">Analitica</div>
+    <h1>FIFA 2026 World Cup League</h1>
+    <p>Pick your winners &middot; Climb the leaderboard</p>
+  </div>
+
+  <div id="login-section" class="section active">
+    <div class="login-wrap">
+      <div class="login-card">
+        <div style="font-size:32px;margin-bottom:14px">&#x26BD;</div>
+        <h2>Join the league</h2>
+        <p>Enter your name to start making picks. Returning? Use the same name to reload your predictions.</p>
+        <div class="input-row">
+          <input type="text" id="name-input" placeholder="Your name..." maxlength="28"/>
+          <button class="btn primary" onclick="doLogin()">Join &rarr;</button>
+        </div>
+        <p style="font-size:12px;color:var(--text3);margin-top:10px">3 points for every correct pick</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-section" class="section">
+    <div class="user-bar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar" id="u-avatar">?</div>
+        <div>
+          <div class="user-info-name" id="u-name">Player</div>
+          <div class="user-info-pts" id="u-pts">0 pts</div>
+        </div>
+      </div>
+      <button class="btn small" onclick="logout()">Switch player</button>
+    </div>
+    <div class="tab-bar">
+      <button class="tab active" onclick="switchTab('picks')">&#x26BD; Picks</button>
+      <button class="tab" onclick="switchTab('board')">&#x1F3C6; Leaderboard</button>
+      <button class="tab" onclick="switchTab('admin')">&#x2699;&#xFE0F; Admin</button>
+    </div>
+
+    <div id="picks-section" class="section active">
+      <div id="matches-container"><div class="empty"><div class="icon">&#x1F4CB;</div>No matches added yet.</div></div>
+    </div>
+
+    <div id="board-section" class="section">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="s-players">0</div><div class="stat-label">Players</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-results">0</div><div class="stat-label">Results in</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-picks">0</div><div class="stat-label">Total picks</div></div>
+      </div>
+      <div id="lb-container"><div class="empty"><div class="icon">&#x1F465;</div>No players yet.</div></div>
+    </div>
+
+    <div id="admin-section" class="section">
+      <div id="admin-lock-screen">
+        <div class="admin-lock">
+          <div class="lock-icon">&#x1F512;</div>
+          <h3>Admin access</h3>
+          <p>Enter the admin password to manage matches and enter results.</p>
+          <div class="pw-row">
+            <input type="password" id="admin-pw-input" placeholder="Password..."/>
+            <button class="btn primary" onclick="unlockAdmin()">Unlock</button>
+          </div>
+          <div class="error-msg" id="pw-error"></div>
+        </div>
+      </div>
+      <div id="admin-panel" style="display:none">
+        <div class="admin-unlocked-bar">
+          <span>&#x1F513; Admin unlocked</span>
+          <button class="btn small" onclick="lockAdmin()">Lock</button>
+        </div>
+        <div class="notice">Add matches as each round is drawn, then enter results once games are played. Results lock picks and award 3 pts automatically.</div>
+        <div class="admin-block">
+          <h3>&#x1F4C5; Matches <span class="tag" id="match-count-tag">0 matches</span></h3>
+          <div id="matches-list-admin"></div>
+          <button class="btn primary" onclick="openAddMatch()" style="margin-top:8px">+ Add match</button>
+        </div>
+        <div class="admin-block">
+          <h3>&#x2705; Enter results</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Setting a result locks picks and awards 3 pts to correct pickers.</p>
+          <div id="results-list"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+            <button class="btn primary" onclick="saveResults()">Save results</button>
+            <span class="saved-flash" id="saved-flash">&#x2713; Saved!</span>
+          </div>
+        </div>
+        <div class="admin-block">
+          <h3>&#x1F5D1;&#xFE0F; Danger zone</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Clear all data and start fresh. This cannot be undone.</p>
+          <button class="btn danger" id="reset-btn">Reset everything</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="match-modal" class="modal-bg" style="display:none">
+  <div class="modal">
+    <h3 id="modal-title">Add match</h3>
+    <div class="edit-grid">
+      <div class="field-row">
+        <div class="field-label">Round / Stage</div>
+        <input type="text" id="m-round" placeholder="e.g. Group Stage"/>
+      </div>
+      <div class="field-row">
+        <div class="field-label">Date</div>
+        <input type="text" id="m-date" placeholder="e.g. Jun 12"/>
+      </div>
+    </div>
+    <div class="edit-grid">
+      <div class="field-row">
+        <div class="field-label">Team A</div>
+        <div class="country-picker">
+          <span class="search-icon">&#x1F50D;</span>
+          <input type="text" class="country-search" id="search-A" placeholder="Search country..." autocomplete="off"/>
+          <div class="country-dropdown" id="dropdown-A"></div>
+          <div class="preview" id="preview-A"></div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-label">Team B</div>
+        <div class="country-picker">
+          <span class="search-icon">&#x1F50D;</span>
+          <input type="text" class="country-search" id="search-B" placeholder="Search country..." autocomplete="off"/>
+          <div class="country-dropdown" id="dropdown-B"></div>
+          <div class="preview" id="preview-B"></div>
+        </div>
+      </div>
+    </div>
+    <div class="field-row checkbox-row">
+      <input type="checkbox" id="m-draw"/>
+      <label for="m-draw">Allow "Draw / Extra time" as a pick</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" id="modal-save-btn" onclick="saveMatch()">Add match</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COUNTRIES=[
+  {name:"Afghanistan",flag:"\uD83C\uDDE6\uD83C\uDDEB"},
+  {name:"Albania",flag:"\uD83C\uDDE6\uD83C\uDDF1"},
+  {name:"Algeria",flag:"\uD83C\uDDE9\uD83C\uDDFF"},
+  {name:"Andorra",flag:"\uD83C\uDDE6\uD83C\uDDE9"},
+  {name:"Angola",flag:"\uD83C\uDDE6\uD83C\uDDF4"},
+  {name:"Antigua and Barbuda",flag:"\uD83C\uDDE6\uD83C\uDDEC"},
+  {name:"Argentina",flag:"\uD83C\uDDE6\uD83C\uDDF7"},
+  {name:"Armenia",flag:"\uD83C\uDDE6\uD83C\uDDF2"},
+  {name:"Australia",flag:"\uD83C\uDDE6\uD83C\uDDFA"},
+  {name:"Austria",flag:"\uD83C\uDDE6\uD83C\uDDF9"},
+  {name:"Azerbaijan",flag:"\uD83C\uDDE6\uD83C\uDDFF"},
+  {name:"Bahamas",flag:"\uD83C\uDDE7\uD83C\uDDF8"},
+  {name:"Bahrain",flag:"\uD83C\uDDE7\uD83C\uDDED"},
+  {name:"Bangladesh",flag:"\uD83C\uDDE7\uD83C\uDDE9"},
+  {name:"Barbados",flag:"\uD83C\uDDE7\uD83C\uDDE7"},
+  {name:"Belarus",flag:"\uD83C\uDDE7\uD83C\uDDFE"},
+  {name:"Belgium",flag:"\uD83C\uDDE7\uD83C\uDDEA"},
+  {name:"Belize",flag:"\uD83C\uDDE7\uD83C\uDDFF"},
+  {name:"Benin",flag:"\uD83C\uDDE7\uD83C\uDDEF"},
+  {name:"Bhutan",flag:"\uD83C\uDDE7\uD83C\uDDF9"},
+  {name:"Bolivia",flag:"\uD83C\uDDE7\uD83C\uDDF4"},
+  {name:"Bosnia and Herzegovina",flag:"\uD83C\uDDE7\uD83C\uDDE6"},
+  {name:"Botswana",flag:"\uD83C\uDDE7\uD83C\uDDFC"},
+  {name:"Brazil",flag:"\uD83C\uDDE7\uD83C\uDDF7"},
+  {name:"Brunei",flag:"\uD83C\uDDE7\uD83C\uDDF3"},
+  {name:"Bulgaria",flag:"\uD83C\uDDE7\uD83C\uDDEC"},
+  {name:"Burkina Faso",flag:"\uD83C\uDDE7\uD83C\uDDEB"},
+  {name:"Burundi",flag:"\uD83C\uDDE7\uD83C\uDDEE"},
+  {name:"Cambodia",flag:"\uD83C\uDDF0\uD83C\uDDED"},
+  {name:"Cameroon",flag:"\uD83C\uDDE8\uD83C\uDDF2"},
+  {name:"Canada",flag:"\uD83C\uDDE8\uD83C\uDDE6"},
+  {name:"Cape Verde",flag:"\uD83C\uDDE8\uD83C\uDDFB"},
+  {name:"Central African Republic",flag:"\uD83C\uDDE8\uD83C\uDDEB"},
+  {name:"Chad",flag:"\uD83C\uDDF9\uD83C\uDDE9"},
+  {name:"Chile",flag:"\uD83C\uDDE8\uD83C\uDDF1"},
+  {name:"China",flag:"\uD83C\uDDE8\uD83C\uDDF3"},
+  {name:"Colombia",flag:"\uD83C\uDDE8\uD83C\uDDF4"},
+  {name:"Comoros",flag:"\uD83C\uDDF0\uD83C\uDDF2"},
+  {name:"Congo",flag:"\uD83C\uDDE8\uD83C\uDDEC"},
+  {name:"Costa Rica",flag:"\uD83C\uDDE8\uD83C\uDDF7"},
+  {name:"Croatia",flag:"\uD83C\uDDED\uD83C\uDDF7"},
+  {name:"Cuba",flag:"\uD83C\uDDE8\uD83C\uDDFA"},
+  {name:"Cyprus",flag:"\uD83C\uDDE8\uD83C\uDDFE"},
+  {name:"Czech Republic",flag:"\uD83C\uDDE8\uD83C\uDDFF"},
+  {name:"DR Congo",flag:"\uD83C\uDDE8\uD83C\uDDE9"},
+  {name:"Denmark",flag:"\uD83C\uDDE9\uD83C\uDDF0"},
+  {name:"Djibouti",flag:"\uD83C\uDDE9\uD83C\uDDEF"},
+  {name:"Dominican Republic",flag:"\uD83C\uDDE9\uD83C\uDDF4"},
+  {name:"Ecuador",flag:"\uD83C\uDDEA\uD83C\uDDE8"},
+  {name:"Egypt",flag:"\uD83C\uDDEA\uD83C\uDDEC"},
+  {name:"El Salvador",flag:"\uD83C\uDDF8\uD83C\uDDFB"},
+  {name:"England",flag:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC65\uDB40\uDC6E\uDB40\uDC67\uDB40\uDC7F"},
+  {name:"Equatorial Guinea",flag:"\uD83C\uDDEC\uD83C\uDDF6"},
+  {name:"Eritrea",flag:"\uD83C\uDDEA\uD83C\uDDF7"},
+  {name:"Estonia",flag:"\uD83C\uDDEA\uD83C\uDDEA"},
+  {name:"Eswatini",flag:"\uD83C\uDDF8\uD83C\uDDFF"},
+  {name:"Ethiopia",flag:"\uD83C\uDDEA\uD83C\uDDF9"},
+  {name:"Fiji",flag:"\uD83C\uDDEB\uD83C\uDDEF"},
+  {name:"Finland",flag:"\uD83C\uDDEB\uD83C\uDDEE"},
+  {name:"France",flag:"\uD83C\uDDEB\uD83C\uDDF7"},
+  {name:"Gabon",flag:"\uD83C\uDDEC\uD83C\uDDE6"},
+  {name:"Gambia",flag:"\uD83C\uDDEC\uD83C\uDDF2"},
+  {name:"Georgia",flag:"\uD83C\uDDEC\uD83C\uDDEA"},
+  {name:"Germany",flag:"\uD83C\uDDE9\uD83C\uDDEA"},
+  {name:"Ghana",flag:"\uD83C\uDDEC\uD83C\uDDED"},
+  {name:"Greece",flag:"\uD83C\uDDEC\uD83C\uDDF7"},
+  {name:"Guatemala",flag:"\uD83C\uDDEC\uD83C\uDDF9"},
+  {name:"Guinea",flag:"\uD83C\uDDEC\uD83C\uDDF3"},
+  {name:"Guinea-Bissau",flag:"\uD83C\uDDEC\uD83C\uDDFC"},
+  {name:"Guyana",flag:"\uD83C\uDDEC\uD83C\uDDFE"},
+  {name:"Haiti",flag:"\uD83C\uDDED\uD83C\uDDF9"},
+  {name:"Honduras",flag:"\uD83C\uDDED\uD83C\uDDF3"},
+  {name:"Hungary",flag:"\uD83C\uDDED\uD83C\uDDFA"},
+  {name:"Iceland",flag:"\uD83C\uDDEE\uD83C\uDDF8"},
+  {name:"India",flag:"\uD83C\uDDEE\uD83C\uDDF3"},
+  {name:"Indonesia",flag:"\uD83C\uDDEE\uD83C\uDDE9"},
+  {name:"Iran",flag:"\uD83C\uDDEE\uD83C\uDDF7"},
+  {name:"Iraq",flag:"\uD83C\uDDEE\uD83C\uDDF6"},
+  {name:"Ireland",flag:"\uD83C\uDDEE\uD83C\uDDEA"},
+  {name:"Israel",flag:"\uD83C\uDDEE\uD83C\uDDF1"},
+  {name:"Italy",flag:"\uD83C\uDDEE\uD83C\uDDF9"},
+  {name:"Ivory Coast",flag:"\uD83C\uDDE8\uD83C\uDDEE"},
+  {name:"Jamaica",flag:"\uD83C\uDDEF\uD83C\uDDF2"},
+  {name:"Japan",flag:"\uD83C\uDDEF\uD83C\uDDF5"},
+  {name:"Jordan",flag:"\uD83C\uDDEF\uD83C\uDDF4"},
+  {name:"Kazakhstan",flag:"\uD83C\uDDF0\uD83C\uDDFF"},
+  {name:"Kenya",flag:"\uD83C\uDDF0\uD83C\uDDEA"},
+  {name:"Kosovo",flag:"\uD83C\uDDFD\uD83C\uDDF0"},
+  {name:"Kuwait",flag:"\uD83C\uDDF0\uD83C\uDDFC"},
+  {name:"Kyrgyzstan",flag:"\uD83C\uDDF0\uD83C\uDDEC"},
+  {name:"Laos",flag:"\uD83C\uDDF1\uD83C\uDDE6"},
+  {name:"Latvia",flag:"\uD83C\uDDF1\uD83C\uDDFB"},
+  {name:"Lebanon",flag:"\uD83C\uDDF1\uD83C\uDDE7"},
+  {name:"Lesotho",flag:"\uD83C\uDDF1\uD83C\uDDF8"},
+  {name:"Liberia",flag:"\uD83C\uDDF1\uD83C\uDDF7"},
+  {name:"Libya",flag:"\uD83C\uDDF1\uD83C\uDDFE"},
+  {name:"Liechtenstein",flag:"\uD83C\uDDF1\uD83C\uDDEE"},
+  {name:"Lithuania",flag:"\uD83C\uDDF1\uD83C\uDDF9"},
+  {name:"Luxembourg",flag:"\uD83C\uDDF1\uD83C\uDDFA"},
+  {name:"Madagascar",flag:"\uD83C\uDDF2\uD83C\uDDEC"},
+  {name:"Malawi",flag:"\uD83C\uDDF2\uD83C\uDDFC"},
+  {name:"Malaysia",flag:"\uD83C\uDDF2\uD83C\uDDFE"},
+  {name:"Maldives",flag:"\uD83C\uDDF2\uD83C\uDDFB"},
+  {name:"Mali",flag:"\uD83C\uDDF2\uD83C\uDDF1"},
+  {name:"Malta",flag:"\uD83C\uDDF2\uD83C\uDDF9"},
+  {name:"Mauritania",flag:"\uD83C\uDDF2\uD83C\uDDF7"},
+  {name:"Mauritius",flag:"\uD83C\uDDF2\uD83C\uDDFA"},
+  {name:"Mexico",flag:"\uD83C\uDDF2\uD83C\uDDFD"},
+  {name:"Moldova",flag:"\uD83C\uDDF2\uD83C\uDDE9"},
+  {name:"Mongolia",flag:"\uD83C\uDDF2\uD83C\uDDF3"},
+  {name:"Montenegro",flag:"\uD83C\uDDF2\uD83C\uDDEA"},
+  {name:"Morocco",flag:"\uD83C\uDDF2\uD83C\uDDE6"},
+  {name:"Mozambique",flag:"\uD83C\uDDF2\uD83C\uDDFF"},
+  {name:"Myanmar",flag:"\uD83C\uDDF2\uD83C\uDDF2"},
+  {name:"Namibia",flag:"\uD83C\uDDF3\uD83C\uDDE6"},
+  {name:"Nepal",flag:"\uD83C\uDDF3\uD83C\uDDF5"},
+  {name:"Netherlands",flag:"\uD83C\uDDF3\uD83C\uDDF1"},
+  {name:"New Zealand",flag:"\uD83C\uDDF3\uD83C\uDDFF"},
+  {name:"Nicaragua",flag:"\uD83C\uDDF3\uD83C\uDDEE"},
+  {name:"Niger",flag:"\uD83C\uDDF3\uD83C\uDDEA"},
+  {name:"Nigeria",flag:"\uD83C\uDDF3\uD83C\uDDEC"},
+  {name:"North Korea",flag:"\uD83C\uDDF0\uD83C\uDDF5"},
+  {name:"North Macedonia",flag:"\uD83C\uDDF2\uD83C\uDDF0"},
+  {name:"Northern Ireland",flag:"\uD83C\uDDEC\uD83C\uDDE7"},
+  {name:"Norway",flag:"\uD83C\uDDF3\uD83C\uDDF4"},
+  {name:"Oman",flag:"\uD83C\uDDF4\uD83C\uDDF2"},
+  {name:"Pakistan",flag:"\uD83C\uDDF5\uD83C\uDDF0"},
+  {name:"Palestine",flag:"\uD83C\uDDF5\uD83C\uDDF8"},
+  {name:"Panama",flag:"\uD83C\uDDF5\uD83C\uDDE6"},
+  {name:"Papua New Guinea",flag:"\uD83C\uDDF5\uD83C\uDDEC"},
+  {name:"Paraguay",flag:"\uD83C\uDDF5\uD83C\uDDFE"},
+  {name:"Peru",flag:"\uD83C\uDDF5\uD83C\uDDEA"},
+  {name:"Philippines",flag:"\uD83C\uDDF5\uD83C\uDDED"},
+  {name:"Poland",flag:"\uD83C\uDDF5\uD83C\uDDF1"},
+  {name:"Portugal",flag:"\uD83C\uDDF5\uD83C\uDDF9"},
+  {name:"Qatar",flag:"\uD83C\uDDF6\uD83C\uDDE6"},
+  {name:"Romania",flag:"\uD83C\uDDF7\uD83C\uDDF4"},
+  {name:"Russia",flag:"\uD83C\uDDF7\uD83C\uDDFA"},
+  {name:"Rwanda",flag:"\uD83C\uDDF7\uD83C\uDDFC"},
+  {name:"Saudi Arabia",flag:"\uD83C\uDDF8\uD83C\uDDE6"},
+  {name:"Scotland",flag:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F"},
+  {name:"Senegal",flag:"\uD83C\uDDF8\uD83C\uDDF3"},
+  {name:"Serbia",flag:"\uD83C\uDDF7\uD83C\uDDF8"},
+  {name:"Sierra Leone",flag:"\uD83C\uDDF8\uD83C\uDDF1"},
+  {name:"Singapore",flag:"\uD83C\uDDF8\uD83C\uDDEC"},
+  {name:"Slovakia",flag:"\uD83C\uDDF8\uD83C\uDDF0"},
+  {name:"Slovenia",flag:"\uD83C\uDDF8\uD83C\uDDEE"},
+  {name:"Solomon Islands",flag:"\uD83C\uDDF8\uD83C\uDDE7"},
+  {name:"Somalia",flag:"\uD83C\uDDF8\uD83C\uDDF4"},
+  {name:"South Africa",flag:"\uD83C\uDDFF\uD83C\uDDE6"},
+  {name:"South Korea",flag:"\uD83C\uDDF0\uD83C\uDDF7"},
+  {name:"South Sudan",flag:"\uD83C\uDDF8\uD83C\uDDF8"},
+  {name:"Spain",flag:"\uD83C\uDDEA\uD83C\uDDF8"},
+  {name:"Sri Lanka",flag:"\uD83C\uDDF1\uD83C\uDDF0"},
+  {name:"Sudan",flag:"\uD83C\uDDF8\uD83C\uDDE9"},
+  {name:"Suriname",flag:"\uD83C\uDDF8\uD83C\uDDF7"},
+  {name:"Sweden",flag:"\uD83C\uDDF8\uD83C\uDDEA"},
+  {name:"Switzerland",flag:"\uD83C\uDDE8\uD83C\uDDED"},
+  {name:"Syria",flag:"\uD83C\uDDF8\uD83C\uDDFE"},
+  {name:"Taiwan",flag:"\uD83C\uDDF9\uD83C\uDDFC"},
+  {name:"Tajikistan",flag:"\uD83C\uDDF9\uD83C\uDDEF"},
+  {name:"Tanzania",flag:"\uD83C\uDDF9\uD83C\uDDFF"},
+  {name:"Thailand",flag:"\uD83C\uDDF9\uD83C\uDDED"},
+  {name:"Timor-Leste",flag:"\uD83C\uDDF9\uD83C\uDDF1"},
+  {name:"Togo",flag:"\uD83C\uDDF9\uD83C\uDDEC"},
+  {name:"Trinidad and Tobago",flag:"\uD83C\uDDF9\uD83C\uDDF9"},
+  {name:"Tunisia",flag:"\uD83C\uDDF9\uD83C\uDDF3"},
+  {name:"Turkey",flag:"\uD83C\uDDF9\uD83C\uDDF7"},
+  {name:"Turkmenistan",flag:"\uD83C\uDDF9\uD83C\uDDF2"},
+  {name:"Uganda",flag:"\uD83C\uDDFA\uD83C\uDDEC"},
+  {name:"Ukraine",flag:"\uD83C\uDDFA\uD83C\uDDE6"},
+  {name:"United Arab Emirates",flag:"\uD83C\uDDE6\uD83C\uDDEA"},
+  {name:"Uruguay",flag:"\uD83C\uDDFA\uD83C\uDDFE"},
+  {name:"USA",flag:"\uD83C\uDDFA\uD83C\uDDF8"},
+  {name:"Uzbekistan",flag:"\uD83C\uDDFA\uD83C\uDDFF"},
+  {name:"Venezuela",flag:"\uD83C\uDDFB\uD83C\uDDEA"},
+  {name:"Vietnam",flag:"\uD83C\uDDFB\uD83C\uDDF3"},
+  {name:"Wales",flag:"\uD83C\uDFF4\uDB40\uDC67\uDB40\uDC62\uDB40\uDC77\uDB40\uDC6C\uDB40\uDC73\uDB40\uDC7F"},
+  {name:"Yemen",flag:"\uD83C\uDDFE\uD83C\uDDEA"},
+  {name:"Zambia",flag:"\uD83C\uDDFF\uD83C\uDDF2"},
+  {name:"Zimbabwe",flag:"\uD83C\uDDFF\uD83C\uDDFC"}
+];
+
+const ADMIN_HASH='8f8d779c7c4accba78a70fb10de3d4880760a61e8fa77dea70a7d6c2434da22f';
+const COLORS=['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#f97316','#ec4899'];
+let editingMatchId=null,adminUnlocked=false,currentUser=null;
+const sel={A:null,B:null};
+
+// storage
+function get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+function put(k,v){localStorage.setItem(k,JSON.stringify(v))}
+const getMatches=()=>get('wc_matches',[]);
+const getResults=()=>get('wc_results',{});
+const getPlayers=()=>get('wc_players',[]);
+const getPicks=u=>get('wc_picks_'+u,{});
+const putPicks=(u,p)=>put('wc_picks_'+u,p);
+
+// helpers
+function initials(n){return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+function colorFor(n){let h=0;for(const c of n)h=(h<<5)-h+c.charCodeAt(0);return COLORS[Math.abs(h)%COLORS.length]}
+function genId(){return 'm'+Date.now()+Math.random().toString(36).slice(2,6)}
+function ensurePlayer(n){const p=getPlayers();if(!p.includes(n)){p.push(n);put('wc_players',p)}}
+function calcPts(u){const pk=getPicks(u),rs=getResults();let p=0;for(const m in rs)if(pk[m]&&pk[m]===rs[m])p+=3;return p}
+// Always look up flag from COUNTRIES array — immune to storage corruption
+function flagOf(name){const c=COUNTRIES.find(x=>x.name===name);return c?c.flag:'\u{1F3F3}\uFE0F'}
+
+async function sha256(s){
+  const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+// country picker
+function initPicker(side){
+  const inp=document.getElementById('search-'+side);
+  const drop=document.getElementById('dropdown-'+side);
+  let hi=-1;
+  function fill(q){
+    const list=q?COUNTRIES.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())):COUNTRIES;
+    if(!list.length){drop.innerHTML='<div class="no-res">No country found</div>';return}
+    drop.innerHTML=list.map((c,i)=>
+      `<div class="c-opt" data-n="${c.name}" data-i="${i}"><span class="c-opt-flag">${c.flag}</span><span class="c-opt-name">${c.name}</span></div>`
+    ).join('');
+    drop.querySelectorAll('.c-opt').forEach(el=>{
+      el.addEventListener('mousedown',e=>{e.preventDefault();pick(side,el.dataset.n)});
+    });
+    hi=-1;
+  }
+  inp.addEventListener('input',()=>{fill(inp.value);drop.classList.add('open')});
+  inp.addEventListener('focus',()=>{fill(inp.value);drop.classList.add('open')});
+  inp.addEventListener('blur',()=>setTimeout(()=>drop.classList.remove('open'),160));
+  inp.addEventListener('keydown',e=>{
+    const opts=drop.querySelectorAll('.c-opt');
+    if(e.key==='ArrowDown'){e.preventDefault();hi=Math.min(hi+1,opts.length-1);opts.forEach((o,i)=>o.classList.toggle('hi',i===hi));opts[hi]&&opts[hi].scrollIntoView({block:'nearest'})}
+    else if(e.key==='ArrowUp'){e.preventDefault();hi=Math.max(hi-1,0);opts.forEach((o,i)=>o.classList.toggle('hi',i===hi))}
+    else if(e.key==='Enter'&&hi>=0&&opts[hi])pick(side,opts[hi].dataset.n);
+    else if(e.key==='Escape')drop.classList.remove('open');
+  });
+}
+function pick(side,name){
+  const flag=flagOf(name);
+  sel[side]={name,flag};
+  document.getElementById('search-'+side).value=name;
+  document.getElementById('dropdown-'+side).classList.remove('open');
+  document.getElementById('preview-'+side).innerHTML=`<span class="preview-flag">${flag}</span><span class="preview-name">${name}</span>`;
+}
+function resetPicker(side){
+  sel[side]=null;
+  document.getElementById('search-'+side).value='';
+  document.getElementById('preview-'+side).innerHTML='';
+}
+
+// admin lock
+async function unlockAdmin(){
+  const pw=document.getElementById('admin-pw-input').value;
+  if(await sha256(pw)===ADMIN_HASH){
+    adminUnlocked=true;
+    document.getElementById('admin-pw-input').classList.remove('error');
+    document.getElementById('pw-error').textContent='';
+    document.getElementById('admin-lock-screen').style.display='none';
+    document.getElementById('admin-panel').style.display='block';
+    renderAdmin();
+  } else {
+    document.getElementById('admin-pw-input').classList.add('error');
+    document.getElementById('pw-error').textContent='Incorrect password.';
+    document.getElementById('admin-pw-input').value='';
+  }
+}
+function lockAdmin(){
+  adminUnlocked=false;
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('admin-lock-screen').style.display='block';
+  document.getElementById('admin-pw-input').value='';
+  document.getElementById('pw-error').textContent='';
+}
+
+// auth
+function doLogin(){
+  const name=document.getElementById('name-input').value.trim();
+  if(!name)return;
+  currentUser=name;ensurePlayer(name);
+  document.getElementById('login-section').classList.remove('active');
+  document.getElementById('main-section').classList.add('active');
+  const av=document.getElementById('u-avatar');
+  av.textContent=initials(name);av.style.background=colorFor(name);
+  document.getElementById('u-name').textContent=name;
+  refreshBar();renderPicks();switchTab('picks');
+}
+function logout(){
+  currentUser=null;lockAdmin();
+  document.getElementById('main-section').classList.remove('active');
+  document.getElementById('login-section').classList.add('active');
+  document.getElementById('name-input').value='';switchTab('picks');
+}
+function refreshBar(){
+  const pts=calcPts(currentUser),n=Object.keys(getPicks(currentUser)).length;
+  document.getElementById('u-pts').textContent=`${pts} pts \u00B7 ${n} pick${n!==1?'s':''} made`;
+}
+
+// tabs
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['picks','board','admin'][i]===tab));
+  ['picks','board','admin'].forEach(t=>{const s=document.getElementById(t+'-section');if(s)s.classList.toggle('active',t===tab)});
+  if(tab==='board')renderBoard();
+  if(tab==='admin'&&adminUnlocked)renderAdmin();
+}
+
+// picks
+function renderPicks(){
+  const matches=getMatches(),results=getResults(),picks=getPicks(currentUser);
+  const c=document.getElementById('matches-container');
+  if(!matches.length){c.innerHTML='<div class="empty"><div class="icon">&#x1F4CB;</div>No matches added yet.<br>Go to Admin to add some!</div>';return}
+  const rounds=[...new Set(matches.map(m=>m.round))];
+  let html='';
+  for(const round of rounds){
+    html+=`<div class="round-label">${round}</div>`;
+    for(const m of matches.filter(x=>x.round===round)){
+      const result=results[m.id],userPick=picks[m.id],locked=!!result;
+      const isOk=userPick&&result&&userPick===result,isBad=userPick&&result&&userPick!==result;
+      const cls=team=>{
+        if(!userPick||userPick!==team)return locked?'locked':'';
+        return isOk?'correct locked':isBad?'wrong locked':'selected';
+      };
+      const dCls=(()=>{
+        if(!userPick||userPick!=='draw')return locked?'locked':'';
+        return isOk?'correct locked':isBad?'wrong locked':'selected';
+      })();
+      const badge=(()=>{
+        if(!userPick)return locked?'':`<span class="badge nopick">No pick yet</span>`;
+        const lbl=userPick==='draw'?'Draw':userPick;
+        if(!result)return `<span class="badge picked">&#x2713; ${lbl}</span>`;
+        return isOk?`<span class="badge correct">&#x2713; Correct +3pts</span>`:`<span class="badge wrong">&#x2717; Wrong</span>`;
+      })();
+      const allP=getPlayers();
+      const cA=allP.filter(p=>getPicks(p)[m.id]===m.teamA.name).length;
+      const cB=allP.filter(p=>getPicks(p)[m.id]===m.teamB.name).length;
+      const cD=m.hasDraw?allP.filter(p=>getPicks(p)[m.id]==='draw').length:0;
+      const tot=cA+cB+cD;
+      // Use flagOf() to always get fresh flag from embedded data
+      const fA=flagOf(m.teamA.name), fB=flagOf(m.teamB.name);
+      const idA=m.id+'-A', idB=m.id+'-B';
+      html+=`<div class="match-card">
+        <div class="match-meta">
+          <span>${m.round}${m.date?' \u00B7 '+m.date:''}</span>
+          ${result?`<span class="result-tag">Result: ${result==='draw'?'Draw':result} &#x2713;</span>`:'<span>Open for picks</span>'}
+        </div>
+        <div class="teams-grid">
+          <div class="team-btn ${cls(m.teamA.name)}" id="${idA}">
+            <span class="team-flag">${fA}</span><div class="tname">${m.teamA.name}</div>
+          </div>
+          <div class="vs-col">
+            <div class="vs">VS</div>
+            ${m.hasDraw?`<div style="margin-top:8px;padding:7px 4px;border:1px solid var(--border);border-radius:8px;font-size:12px;text-align:center;background:var(--surface2)" class="${dCls}" id="${m.id}-D">Draw</div>`:''}
+          </div>
+          <div class="team-btn ${cls(m.teamB.name)}" id="${idB}">
+            <span class="team-flag">${fB}</span><div class="tname">${m.teamB.name}</div>
+          </div>
+        </div>
+        <div class="match-footer">${badge}<span class="pick-count">${tot} pick${tot!==1?'s':''} made</span></div>
+      </div>`;
+    }
+  }
+  c.innerHTML=html;
+  // Attach click handlers after render (avoids inline onclick quoting issues with special chars)
+  for(const m of matches){
+    const locked=!!results[m.id];
+    if(!locked){
+      const elA=document.getElementById(m.id+'-A');
+      const elB=document.getElementById(m.id+'-B');
+      const elD=document.getElementById(m.id+'-D');
+      if(elA)elA.onclick=()=>makePick(m.id,m.teamA.name);
+      if(elB)elB.onclick=()=>makePick(m.id,m.teamB.name);
+      if(elD){elD.style.cursor='pointer';elD.onclick=()=>makePick(m.id,'draw');}
+    }
+  }
+}
+
+function makePick(matchId,pick){
+  if(getResults()[matchId])return;
+  const picks=getPicks(currentUser);
+  if(picks[matchId]===pick)delete picks[matchId];else picks[matchId]=pick;
+  putPicks(currentUser,picks);renderPicks();refreshBar();
+}
+
+// leaderboard
+function renderBoard(){
+  const players=getPlayers(),results=getResults(),matches=getMatches();
+  const board=players.map(p=>({name:p,pts:calcPts(p),picks:Object.keys(getPicks(p)).length}))
+    .sort((a,b)=>b.pts-a.pts||(b.picks-a.picks));
+  document.getElementById('s-players').textContent=players.length;
+  document.getElementById('s-results').textContent=Object.keys(results).length;
+  document.getElementById('s-picks').textContent=board.reduce((s,p)=>s+p.picks,0);
+  if(!board.length){document.getElementById('lb-container').innerHTML='<div class="empty"><div class="icon">&#x1F465;</div>No players yet.</div>';return}
+  const medals=['&#x1F947;','&#x1F948;','&#x1F949;'];
+  document.getElementById('lb-container').innerHTML=board.map((p,i)=>`
+    <div class="lb-card ${p.name===currentUser?'me':''}">
+      <div class="rank">${i<3?medals[i]:`#${i+1}`}</div>
+      <div class="avatar" style="width:36px;height:36px;font-size:13px;background:${colorFor(p.name)};color:#fff">${initials(p.name)}</div>
+      <div><div class="lb-name">${p.name}${p.name===currentUser?' <span style="font-size:11px;color:var(--text3)">(you)</span>':''}</div>
+      <div class="lb-sub">${p.picks} of ${matches.length} picks made</div></div>
+      <div class="lb-pts">${p.pts}<span> pts</span></div>
+    </div>`).join('');
+}
+
+// admin
+function renderAdmin(){
+  const matches=getMatches(),results=getResults();
+  document.getElementById('match-count-tag').textContent=matches.length+' match'+(matches.length!==1?'es':'');
+  let html='';
+  if(!matches.length)html='<div style="color:var(--text3);font-size:13px;margin-bottom:10px">No matches yet.</div>';
+  for(const m of matches){
+    const has=!!results[m.id];
+    const fA=flagOf(m.teamA.name),fB=flagOf(m.teamB.name);
+    html+=`<div class="match-edit-row">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600">${fA} ${m.teamA.name} vs ${fB} ${m.teamB.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">${m.round}${m.date?' \u00B7 '+m.date:''}${has?' \u00B7 <span style=\"color:var(--green)\">Result set</span>':''}${m.hasDraw?' \u00B7 Draw allowed':''}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn small" onclick="openEdit('${m.id}')">Edit</button>
+          ${!has?`<button class="btn small danger" onclick="delMatch('${m.id}')">Delete</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('matches-list-admin').innerHTML=html;
+  let rhtml='';
+  if(!matches.length)rhtml='<div style="color:var(--text3);font-size:13px">Add matches first.</div>';
+  for(const m of matches){
+    const cur=results[m.id]||'';
+    const fA=flagOf(m.teamA.name),fB=flagOf(m.teamB.name);
+    rhtml+=`<div class="result-row">
+      <div class="result-label">${fA} ${m.teamA.name} vs ${fB} ${m.teamB.name}${m.date?' \u00B7 '+m.date:''}</div>
+      <select id="res-${m.id}">
+        <option value="">\u2014 no result yet \u2014</option>
+        <option value="${m.teamA.name}" ${cur===m.teamA.name?'selected':''}>${fA} ${m.teamA.name} wins</option>
+        <option value="${m.teamB.name}" ${cur===m.teamB.name?'selected':''}>${fB} ${m.teamB.name} wins</option>
+        ${m.hasDraw?`<option value="draw" ${cur==='draw'?'selected':''}>Draw / Extra time</option>`:''}
+      </select>
+    </div>`;
+  }
+  document.getElementById('results-list').innerHTML=rhtml;
+}
+
+function openAddMatch(){
+  editingMatchId=null;
+  document.getElementById('modal-title').textContent='Add match';
+  document.getElementById('modal-save-btn').textContent='Add match';
+  document.getElementById('m-round').value='';
+  document.getElementById('m-date').value='';
+  document.getElementById('m-draw').checked=false;
+  resetPicker('A');resetPicker('B');
+  document.getElementById('match-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('m-round').focus(),50);
+}
+function openEdit(id){
+  const m=getMatches().find(x=>x.id===id);if(!m)return;
+  editingMatchId=id;
+  document.getElementById('modal-title').textContent='Edit match';
+  document.getElementById('modal-save-btn').textContent='Save changes';
+  document.getElementById('m-round').value=m.round;
+  document.getElementById('m-date').value=m.date||'';
+  document.getElementById('m-draw').checked=!!m.hasDraw;
+  pick('A',m.teamA.name);pick('B',m.teamB.name);
+  document.getElementById('match-modal').style.display='flex';
+}
+function closeModal(){document.getElementById('match-modal').style.display='none'}
+
+function saveMatch(){
+  const round=document.getElementById('m-round').value.trim();
+  const date=document.getElementById('m-date').value.trim();
+  const hasDraw=document.getElementById('m-draw').checked;
+  if(!round)return alert('Please enter a round / stage.');
+  if(!sel.A)return alert('Please select Team A.');
+  if(!sel.B)return alert('Please select Team B.');
+  if(sel.A.name===sel.B.name)return alert('Teams must be different.');
+  const matches=getMatches();
+  const entry={round,date,teamA:{name:sel.A.name,flag:sel.A.flag},teamB:{name:sel.B.name,flag:sel.B.flag},hasDraw};
+  if(editingMatchId){
+    const idx=matches.findIndex(m=>m.id===editingMatchId);
+    if(idx!==-1)matches[idx]={...matches[idx],...entry};
+  } else {
+    matches.push({id:genId(),...entry});
+  }
+  put('wc_matches',matches);
+  closeModal();renderAdmin();
+  if(currentUser)renderPicks();
+}
+function delMatch(id){
+  if(!confirm('Delete this match? All picks for it will be lost.'))return;
+  put('wc_matches',getMatches().filter(m=>m.id!==id));
+  const r=getResults();delete r[id];put('wc_results',r);
+  renderAdmin();if(currentUser)renderPicks();
+}
+function saveResults(){
+  const results=getResults();
+  for(const m of getMatches()){
+    const s=document.getElementById('res-'+m.id);
+    if(s){if(s.value)results[m.id]=s.value;else delete results[m.id]}
+  }
+  put('wc_results',results);
+  const f=document.getElementById('saved-flash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),2000);
+  if(currentUser){renderPicks();refreshBar()}
+}
+
+// reset — get player list BEFORE wiping storage
+function resetAll(){
+  if(!confirm('This will delete ALL matches, results, and player data. Are you sure?'))return;
+  if(!confirm('Final warning \u2014 this cannot be undone!'))return;
+  const players=getPlayers(); // capture before deletion
+  localStorage.removeItem('wc_matches');
+  localStorage.removeItem('wc_results');
+  localStorage.removeItem('wc_players');
+  players.forEach(p=>localStorage.removeItem('wc_picks_'+p));
+  location.reload();
+}
+
+// init
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('admin-pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockAdmin()});
+document.getElementById('match-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+document.getElementById('reset-btn').addEventListener('click',resetAll);
+initPicker('A');
+initPicker('B');
+</script>
+</body>
+</html>
